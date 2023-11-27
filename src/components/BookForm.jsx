@@ -1,35 +1,22 @@
-import React, { useState, useEffect } from 'react';
+// src/components/BookForm.js
+import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+
+let formik; // Declare formik variable
 
 const BookForm = () => {
   const [books, setBooks] = useState([]);
   const [selectedBookIndex, setSelectedBookIndex] = useState(null);
 
-//   useEffect(() => {
-//     // Simulated data fetching, replace with actual API calls if needed
-//     const fetchData = async () => {
-//       // Example: Fetch books data from an API endpoint
-//       // const response = await fetch('your_books_api_endpoint');
-//       // const data = await response.json();
-
-//       // For demonstration, using static data
-//       const staticData = [
-//         { title: 'Book 1', author: 'Author 1', isbn: '123456789', publicationDate: '2023-01-01' },
-//         { title: 'Book 2', author: 'Author 2', isbn: '987654321', publicationDate: '2023-02-01' },
-//         { title: 'Book 3', author: 'Author 3', isbn: '123456789', publicationDate: '2023-01-01' },
-//         { title: 'Book 4', author: 'Author 4', isbn: '987654321', publicationDate: '2023-02-01' },
-//         { title: 'Book 5', author: 'Author 5', isbn: '123456789', publicationDate: '2023-01-01' },
-//         { title: 'Book 6', author: 'Author 6', isbn: '987654321', publicationDate: '2023-02-01' },
-//         // Add more books as needed
-//       ];
-
-//       setBooks(staticData);
-//     };
-
-//     fetchData();
-//   }, []);
+  // Validation Schema using Yup
+  const validationSchema = Yup.object({
+    title: Yup.string().required('Title is required'),
+    author: Yup.string().required('Author is required'),
+    isbn: Yup.string().required('ISBN is required'),
+    publicationDate: Yup.date().required('Publication Date is required'),
+  });
 
   const handleBookSubmit = (values) => {
     if (selectedBookIndex === null) {
@@ -46,6 +33,9 @@ const BookForm = () => {
 
   const handleEditBook = (index) => {
     setSelectedBookIndex(index);
+    // Populate the form fields with the values of the selected book
+    const selectedBook = books[index];
+    formik.setValues(selectedBook);
   };
 
   const handleDeleteBook = (index) => {
@@ -55,25 +45,22 @@ const BookForm = () => {
     setSelectedBookIndex(null); // Reset selection after deleting
   };
 
-  // Validation Schema using Yup
-  const validationSchema = Yup.object({
-    title: Yup.string().required('Title is required'),
-    author: Yup.string().required('Author is required'),
-    isbn: Yup.string().required('ISBN is required'),
-    publicationDate: Yup.date().required('Publication Date is required'),
-  });
-
   return (
     <div className="container">
       <div className="row">
         <div className="col-md-4 col-lg-4">
           <Formik
-            initialValues={{ title: '', author: '', isbn: '', publicationDate: '' }}
+            initialValues={
+              selectedBookIndex !== null
+                ? books[selectedBookIndex] // Set initial values for editing
+                : { title: '', author: '', isbn: '', publicationDate: '' } // Set initial values for adding
+            }
             validationSchema={validationSchema}
             onSubmit={(values, { resetForm }) => {
               handleBookSubmit(values);
               resetForm(); // Reset the form after submission
             }}
+            innerRef={(formikInstance) => (formik = formikInstance)} // Assign formik reference
           >
             <Form>
               <div className="form-group">
